@@ -29,7 +29,83 @@ GET {{baseUrl}}/api/auth/manage/info
 ### 5. Refresh
 POST {{baseUrl}}/api/auth/refresh
 Content-Type: application/json
-
 {
   "refreshToken": "{{login.response.body.$.refreshToken}}"
 }
+
+### 6. Crear enlace con código generado
+# @name createLink
+POST {{baseUrl}}/api/links
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "destinationUrl": "https://learn.microsoft.com/aspnet/core"
+}
+
+### 7. Crear enlace con alias y expiración
+POST {{baseUrl}}/api/links
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "destinationUrl": "https://github.com",
+  "alias": "mi-github",
+  "expiresAt": "2027-12-31T23:59:59-05:00"
+}
+
+### 8. Errores de validación combinados (debe dar 400 con tres errores)
+POST {{baseUrl}}/api/links
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "destinationUrl": "javascript:alert(1)",
+  "alias": "api",
+  "expiresAt": "2020-01-01T00:00:00Z"
+}
+
+### 9. Listar
+GET {{baseUrl}}/api/links?page=1&pageSize=10
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### 10. Obtener por código
+GET {{baseUrl}}/api/links/{{createLink.response.body.$.code}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### 11. Actualizar
+PUT {{baseUrl}}/api/links/{{createLink.response.body.$.code}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "destinationUrl": "https://learn.microsoft.com/dotnet"
+}
+
+### 12. Desactivar
+DELETE {{baseUrl}}/api/links/{{createLink.response.body.$.code}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### 13. Registro de un segundo usuario
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "otro@ejemplo.com",
+  "password": "Prueba123!"
+}
+
+### 14. Login del segundo usuario
+# @name login2
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "otro@ejemplo.com",
+  "password": "Prueba123!"
+}
+
+### 15. El segundo usuario intenta ver el enlace del primero (debe dar 404)
+GET {{baseUrl}}/api/links/mi-github
+Authorization: Bearer {{login2.response.body.$.accessToken}}
+

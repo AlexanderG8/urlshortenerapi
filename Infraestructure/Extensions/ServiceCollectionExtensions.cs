@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics.Contracts;
-using System.Net;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using urlshortenerapi.Features.Analytics;
 using urlshortenerapi.Features.Auth;
 using urlshortenerapi.Features.Links;
@@ -41,7 +40,9 @@ namespace urlshortenerapi.Infraestructure.Extensions
             });
 
             services.AddExceptionHandler<GlobalExceptionHandler>();
-
+            // Valida DataAnnotations de parámetros y cuerpos en Minimal APIs.
+            // Si falla, responde 400 con ValidationProblemDetails automáticamente.
+            services.AddValidation();
             return services;
         }
 
@@ -116,6 +117,9 @@ namespace urlshortenerapi.Infraestructure.Extensions
         /// <returns></returns>
         public static IServiceCollection AddLinksFeature(this IServiceCollection services)
         {
+            // TryAdd: otras funcionalidades también lo necesitan y no debe registrarse dos veces.
+            services.TryAddSingleton(TimeProvider.System);
+
             services.AddSingleton<IShortCodeGenerator, ShortCodeGenerator>();
             services.AddSingleton<IAliasValidator, AliasValidator>();
             services.AddSingleton<IDestinationUrlValidator, DestinationUrlValidator>();
