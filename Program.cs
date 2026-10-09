@@ -1,32 +1,16 @@
 using Scalar.AspNetCore;
-using urlshortenerapi.Infraestructure.ErrorHandling;
+using urlshortenerapi.Infraestructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-
-// Metadatos del documento OpenAPI
-builder.Services.AddOpenApi(options =>
-{
-    options.AddDocumentTransformer((document, context, cancellationToken) =>
-    {
-        document.Info.Title = "Url Shortener API";
-        document.Info.Version = "v1";
-        document.Info.Description = "API para acortar URLs y redirigir a la URL original.";
-        return Task.CompletedTask;
-    });
-});
-// Configuración de ProblemDetails para personalizar la respuesta de error
-builder.Services.AddProblemDetails(options =>
-{
-    options.CustomizeProblemDetails = context =>
-    {
-        context.ProblemDetails.Instance = $"{context.HttpContext.Request.Method} {context.HttpContext.Request.Path}";
-    };
-});
-// Agrega el manejador de excepciones global
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+// Agregando servicios al contenedor de dependencias.
+// ApiDocumentation: Agrega servicios para generar documentación OpenAPI (Swagger).
+// ErrorHandling: Agrega servicios para manejar errores y excepciones de manera centralizada.
+// ApplicationOptions: Agrega servicios para configurar opciones de la aplicación a partir de la configuración (appsettings.json, variables de entorno, etc.).
+builder.Services
+    .AddApiDocumentation()
+    .AddErrorHandling()
+    .AddApplicationOptions()
+    .AddPersistence(builder.Configuration);
 
 var app = builder.Build();
 
