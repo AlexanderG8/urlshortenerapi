@@ -1,4 +1,5 @@
 using Scalar.AspNetCore;
+using urlshortenerapi.Features.Auth;
 using urlshortenerapi.Infraestructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,7 +11,8 @@ builder.Services
     .AddApiDocumentation()
     .AddErrorHandling()
     .AddApplicationOptions()
-    .AddPersistence(builder.Configuration);
+    .AddPersistence(builder.Configuration)
+    .AddAuth();
 
 var app = builder.Build();
 
@@ -26,5 +28,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapAuthEndpoints(); // Mapea los endpoints de autenticación y autorización
 
 app.Run();

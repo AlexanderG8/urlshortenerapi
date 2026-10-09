@@ -1,5 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.Contracts;
+using System.Net;
 using urlshortenerapi.Features.Analytics;
+using urlshortenerapi.Features.Auth;
 using urlshortenerapi.Features.Links;
 using urlshortenerapi.Infraestructure.ErrorHandling;
 using urlshortenerapi.Infraestructure.Persistence;
@@ -63,6 +68,42 @@ namespace urlshortenerapi.Infraestructure.Extensions
 
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(connectionString));
+
+            return services;
+        }
+
+        /// <summary>
+        /// Configura la autenticación y autorización de la API.
+        /// Ayudará a proteger los endpoints y a manejar la identidad de los usuarios. 
+        /// El access token tiene una duración de 30 minutos y el refresh token de 7 días. 
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddAuth(this IServiceCollection services)
+        {
+            services.AddAuthorization();
+
+            services.AddIdentityApiEndpoints<ApplicationUser>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+
+                options.Password.RequiredLength = 8;
+                options.Password.RequireDigit = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireNonAlphanumeric = true;
+
+                options.Lockout.AllowedForNewUsers = true;
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+            })
+                .AddEntityFrameworkStores<AppDbContext>();
+
+            services.Configure<BearerTokenOptions>(IdentityConstants.BearerScheme, options =>
+            {
+                options.BearerTokenExpiration = TimeSpan.FromMinutes(30);
+                options.RefreshTokenExpiration = TimeSpan.FromDays(7);
+            });
 
             return services;
         }

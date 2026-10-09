@@ -1,6 +1,35 @@
-@urlshortenerapi_HostAddress = http://localhost:5021
+@baseUrl = https://localhost:7260
 
-GET {{urlshortenerapi_HostAddress}}/weatherforecast/
-Accept: application/json
+### 1. Registro
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
 
-###
+{
+  "email": "prueba@ejemplo.com",
+  "password": "Prueba123!"
+}
+
+### 2. Login
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "prueba@ejemplo.com",
+  "password": "Prueba123!"
+}
+
+### 3. Datos del usuario autenticado
+GET {{baseUrl}}/api/auth/manage/info
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### 4. Sin token (debe dar 401)
+GET {{baseUrl}}/api/auth/manage/info
+
+### 5. Refresh
+POST {{baseUrl}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{login.response.body.$.refreshToken}}"
+}

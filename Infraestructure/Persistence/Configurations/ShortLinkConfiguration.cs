@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using urlshortenerapi.Features.Auth;
 using urlshortenerapi.Features.Links;
 
 namespace urlshortenerapi.Infraestructure.Persistence.Configurations
@@ -35,6 +36,11 @@ namespace urlshortenerapi.Infraestructure.Persistence.Configurations
 
             // Listado paginado de "mis enlaces", ordenado por fecha.
             builder.HasIndex(l => new { l.OwnerId, l.CreatedAt });
+
+            builder.HasOne<ApplicationUser>()
+                .WithMany()
+                .HasForeignKey(x => x.OwnerId)
+                .OnDelete(DeleteBehavior.Cascade); // Si se elimina el usuario, se eliminan sus enlaces (y en cascada, sus clics)
         }
     }
 }
