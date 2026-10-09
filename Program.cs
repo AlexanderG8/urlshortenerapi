@@ -12,7 +12,8 @@ builder.Services
     .AddErrorHandling()
     .AddApplicationOptions()
     .AddPersistence(builder.Configuration)
-    .AddAuth();
+    .AddAuth()
+    .AddLinksFeature();
 
 var app = builder.Build();
 

@@ -107,5 +107,20 @@ namespace urlshortenerapi.Infraestructure.Extensions
 
             return services;
         }
+
+        /// <summary>
+        /// Configura los servicios relacionados con la funcionalidad de acortamiento de enlaces, 
+        /// incluyendo la generación de códigos cortos, validación de alias y validación de URLs de destino.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddLinksFeature(this IServiceCollection services)
+        {
+            services.AddSingleton<IShortCodeGenerator, ShortCodeGenerator>();
+            services.AddSingleton<IAliasValidator, AliasValidator>();
+            services.AddSingleton<IDestinationUrlValidator, DestinationUrlValidator>();
+
+            return services;
+        }
     }
 }
