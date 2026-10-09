@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using urlshortenerapi.Features.Auth;
 using urlshortenerapi.Features.Links.Contracts;
+using urlshortenerapi.Features.Redirect;
 using urlshortenerapi.Infraestructure.Persistence;
 
 namespace urlshortenerapi.Features.Links.Endpoints
@@ -21,6 +22,7 @@ namespace urlshortenerapi.Features.Links.Endpoints
             IShortCodeGenerator codeGenerator,
             IOptions<ShortLinkOptions> options,
             TimeProvider timeProvider,
+            ShortLinkCache linkCache,
             CancellationToken cancellationToken)
         {
             var now = timeProvider.GetUtcNow();
@@ -66,7 +68,9 @@ namespace urlshortenerapi.Features.Links.Endpoints
                             $"No se pudo generar un código único tras {MaxGenerationAttempts} intentos.");
                 }
             }
-
+            // InvalidateAsync sirve para eliminar la entrada en caché del enlace recién creado,
+            // asegurando que cualquier solicitud futura obtenga la información más reciente.
+            await linkCache.InvalidateAsync(link.Code, cancellationToken);
             var response = LinkResponse.FromEntity(link, options.Value.BaseUrl);
             return TypedResults.CreatedAtRoute(response, GetLink.RouteName, new { code = link.Code });
         }

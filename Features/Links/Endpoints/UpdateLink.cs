@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using urlshortenerapi.Features.Auth;
 using urlshortenerapi.Features.Links.Contracts;
+using urlshortenerapi.Features.Redirect;
 using urlshortenerapi.Infraestructure.Persistence;
 
 namespace urlshortenerapi.Features.Links.Endpoints
@@ -18,6 +19,7 @@ namespace urlshortenerapi.Features.Links.Endpoints
         IDestinationUrlValidator urlValidator,
         IOptions<ShortLinkOptions> options,
         TimeProvider timeProvider,
+        ShortLinkCache linkCache,
         CancellationToken cancellationToken)
         {
             var now = timeProvider.GetUtcNow();
@@ -47,7 +49,7 @@ namespace urlshortenerapi.Features.Links.Endpoints
 
             link.Update(destinationUrl!, expiresAt, now);
             await db.SaveChangesAsync(cancellationToken);
-
+            await linkCache.InvalidateAsync(link.Code, cancellationToken);
             return TypedResults.Ok(LinkResponse.FromEntity(link, options.Value.BaseUrl));
         }
     }

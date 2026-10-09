@@ -14,7 +14,8 @@ builder.Services
     .AddApplicationOptions()
     .AddPersistence(builder.Configuration)
     .AddAuth()
-    .AddLinksFeature();
+    .AddLinksFeature()
+    .AddRedirectFeature();
 
 var app = builder.Build();
 
@@ -35,6 +36,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapAuthEndpoints(); // Mapea los endpoints de autenticación y autorización
+app.MapLinkEndpoints();
 // Mapea los endpoints relacionados con la funcionalidad de acortamiento de enlaces
 app.MapLinkEndpoints();
 

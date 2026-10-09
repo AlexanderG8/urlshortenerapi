@@ -15,11 +15,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="10.10.0" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.17.14" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Features\Redirect\" />
   </ItemGroup>
 
 </Project>

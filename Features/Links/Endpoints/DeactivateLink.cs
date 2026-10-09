@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using urlshortenerapi.Features.Auth;
+using urlshortenerapi.Features.Redirect;
 using urlshortenerapi.Infraestructure.Persistence;
 
 namespace urlshortenerapi.Features.Links.Endpoints
@@ -13,6 +14,7 @@ namespace urlshortenerapi.Features.Links.Endpoints
         ClaimsPrincipal user,
         AppDbContext db,
         TimeProvider timeProvider,
+        ShortLinkCache linkCache,
         CancellationToken cancellationToken)
         {
             var ownerId = user.GetRequiredUserId();
@@ -25,7 +27,7 @@ namespace urlshortenerapi.Features.Links.Endpoints
 
             link.Deactivate(timeProvider.GetUtcNow());
             await db.SaveChangesAsync(cancellationToken);
-
+            await linkCache.InvalidateAsync(link.Code, cancellationToken);
             return TypedResults.NoContent();
         }
     }

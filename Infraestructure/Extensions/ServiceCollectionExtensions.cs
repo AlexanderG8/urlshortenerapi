@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using urlshortenerapi.Features.Analytics;
 using urlshortenerapi.Features.Auth;
 using urlshortenerapi.Features.Links;
+using urlshortenerapi.Features.Redirect;
 using urlshortenerapi.Infraestructure.ErrorHandling;
 using urlshortenerapi.Infraestructure.Persistence;
 
@@ -123,6 +124,22 @@ namespace urlshortenerapi.Infraestructure.Extensions
             services.AddSingleton<IShortCodeGenerator, ShortCodeGenerator>();
             services.AddSingleton<IAliasValidator, AliasValidator>();
             services.AddSingleton<IDestinationUrlValidator, DestinationUrlValidator>();
+
+            return services;
+        }
+
+        /// <summary>
+        /// Configura los servicios relacionados con la funcionalidad de redirección de enlaces cortos,
+        /// incluyendo el almacenamiento en caché de los enlaces cortos y la redirección a sus destinos.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddRedirectFeature(this IServiceCollection services)
+        {
+            services.TryAddSingleton(TimeProvider.System);
+
+            services.AddHybridCache();
+            services.AddSingleton<ShortLinkCache>();
 
             return services;
         }
