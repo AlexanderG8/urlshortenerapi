@@ -13,12 +13,17 @@ builder.Services
     .AddApiDocumentation()
     .AddErrorHandling()
     .AddApplicationOptions()
+    .AddForwardedHeadersSupport(builder.Configuration)
     .AddPersistence(builder.Configuration)
     .AddAuth()
     .AddLinksFeature()
-    .AddRedirectFeature();
+    .AddRedirectFeature()
+    .AddAnalyticsFeature();
 
 var app = builder.Build();
+
+// Configuración de la aplicación para procesar encabezados de proxy inverso (X-Forwarded-For, X-Forwarded-Proto, etc.)
+app.UseForwardedHeaders();
 
 // El orden importa: el manejador de excepciones debe ir primero para capturar todo lo que viene después.
 app.UseExceptionHandler();

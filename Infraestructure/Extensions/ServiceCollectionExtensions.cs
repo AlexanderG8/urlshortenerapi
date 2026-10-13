@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Net;
 using urlshortenerapi.Features.Analytics;
 using urlshortenerapi.Features.Auth;
 using urlshortenerapi.Features.Links;
@@ -140,6 +142,51 @@ namespace urlshortenerapi.Infraestructure.Extensions
 
             services.AddHybridCache();
             services.AddSingleton<ShortLinkCache>();
+
+            return services;
+        }
+
+        /// <summary>
+        /// Configura los servicios relacionados con la funcionalidad de analíticas de clics,
+        /// incluyendo el seguimiento de clics, el almacenamiento de registros de clics y la persistencia de los mismos.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddAnalyticsFeature(this IServiceCollection services)
+        {
+            services.TryAddSingleton(TimeProvider.System);
+
+            services.AddSingleton<ClickQueue>();
+            services.AddSingleton<IClickTracker, ClickTracker>();
+            services.AddHostedService<ClickPersistenceService>();
+
+            return services;
+        }
+
+        /// <summary>
+        /// Configura el soporte para encabezados de reenvío (Forwarded Headers) en la aplicación, 
+        /// permitiendo que la aplicación reconozca correctamente las direcciones IP y los esquemas de protocolo cuando se encuentra detrás de proxies o balanceadores de carga.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public static IServiceCollection AddForwardedHeadersSupport(this IServiceCollection services, IConfiguration configuration)
+        {
+            var knownProxies = configuration.GetSection("ForwardedHeaders:KnownProxies").Get<string[]>() ?? [];
+
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+                foreach (var proxy in knownProxies)
+                {
+                    if (!IPAddress.TryParse(proxy, out var address))
+                        throw new InvalidOperationException($"IP de proxy inválida en ForwardedHeaders:KnownProxies: '{proxy}'.");
+
+                    options.KnownProxies.Add(address);
+                }
+            });
 
             return services;
         }

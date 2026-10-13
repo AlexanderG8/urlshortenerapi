@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
+using urlshortenerapi.Features.Analytics;
 namespace urlshortenerapi.Features.Redirect;
 
 internal static class RedirectToDestination
@@ -8,6 +9,7 @@ internal static class RedirectToDestination
         HttpContext httpContext,
         ShortLinkCache linkCache,
         TimeProvider timeProvider,
+        IClickTracker clickTracker,
         CancellationToken cancellationToken)
     {
         var target = await linkCache.GetAsync(code, cancellationToken);
@@ -22,6 +24,7 @@ internal static class RedirectToDestination
                 statusCode: StatusCodes.Status410Gone);
         }
 
+        clickTracker.Track(httpContext, target.LinkId);
 
         // Evita que navegadores o proxies guarden la redirección y dejen de pasar por la API.
         httpContext.Response.Headers.CacheControl = "no-store";
