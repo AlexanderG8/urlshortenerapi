@@ -29,9 +29,9 @@ namespace urlshortenerapi.Infraestructure.Persistence.Configurations
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Índice para las estadísticas: "clics del enlace X entre fecha A y B".
-            // INCLUDE evita volver a la tabla para leer el referer en el top de referers.
+            // Cubre todas las consultas de estadísticas sin leer la tabla.
             builder.HasIndex(c => new { c.ShortLinkId, c.OccurredAt })
-                .IncludeProperties(c => c.RefererHost);
+                .IncludeProperties(c => new { c.RefererHost, c.IpHash });
         }
     }
 }

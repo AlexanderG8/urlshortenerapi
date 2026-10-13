@@ -109,3 +109,28 @@ Content-Type: application/json
 GET {{baseUrl}}/api/links/mi-github
 Authorization: Bearer {{login2.response.body.$.accessToken}}
 
+
+
+### 16. Estadísticas (últimos 30 días, UTC)
+GET {{baseUrl}}/api/links/mi-github/stats
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### 17. Estadísticas en hora de Lima
+GET {{baseUrl}}/api/links/mi-github/stats?timeZone=America/Lima
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### 18. Rango específico
+GET {{baseUrl}}/api/links/mi-github/stats?from=2026-10-01&to=2026-10-13&timeZone=America/Lima
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### 19. Zona horaria inválida (400)
+GET {{baseUrl}}/api/links/mi-github/stats?timeZone=Marte/Olympus
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### 20. Fecha con formato inválido (400, no 500)
+GET {{baseUrl}}/api/links/mi-github/stats?from=ayer
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### 21. Estadísticas de un enlace ajeno (404)
+GET {{baseUrl}}/api/links/mi-github/stats
+Authorization: Bearer {{login2.response.body.$.accessToken}}

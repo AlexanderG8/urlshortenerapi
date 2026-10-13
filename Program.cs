@@ -1,4 +1,5 @@
 using Scalar.AspNetCore;
+using urlshortenerapi.Features.Analytics.Endpoints;
 using urlshortenerapi.Features.Auth;
 using urlshortenerapi.Features.Links.Endpoints;
 using urlshortenerapi.Features.Redirect;
@@ -43,6 +44,7 @@ app.UseAuthorization();
 
 app.MapAuthEndpoints(); // Mapea los endpoints de autenticación y autorización
 app.MapLinkEndpoints(); // Mapea los endpoints relacionados con la funcionalidad de acortamiento de enlaces
+app.MapAnalyticsEndpoints(); // Mapea los endpoints relacionados con la funcionalidad de análisis y estadísticas de enlaces
 app.MapRedirectEndpoints(); // Mapea los endpoints relacionados con la redirección de enlaces
 
 app.Run();

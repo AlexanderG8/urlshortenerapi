@@ -9,30 +9,49 @@ namespace urlshortenerapi.Infraestructure.ErrorHandling
         IHostEnvironment environment) : IExceptionHandler
     {
         public async ValueTask<bool> TryHandleAsync(
-            HttpContext httpContext,
-            Exception exception,
-            CancellationToken cancellationToken
-            )
+    HttpContext httpContext,
+    Exception exception,
+    CancellationToken cancellationToken)
         {
             if (exception is OperationCanceledException && httpContext.RequestAborted.IsCancellationRequested)
             {
                 logger.LogInformation("Petición cancelada por el cliente: {Method} {Path}",
-                httpContext.Request.Method, httpContext.Request.Path);
+                    httpContext.Request.Method, httpContext.Request.Path);
                 return true;
             }
 
-            logger.LogError(exception, "Excepción no controlada en {Method} {Path}",
-                httpContext.Request.Method, httpContext.Request.Path);
+            ProblemDetails problemDetails;
 
-            httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            if (exception is BadHttpRequestException badRequest)
+            {
+                // Error del cliente (parámetro con formato inválido, JSON mal formado): no es un error del servidor.
+                logger.LogWarning("Solicitud inválida en {Method} {Path}: {Message}",
+                    httpContext.Request.Method, httpContext.Request.Path, badRequest.Message);
 
-            var problemDetails = new ProblemDetails
+                problemDetails = new ProblemDetails
+                {
+                    Status = badRequest.StatusCode,
+                    Title = "Solicitud inválida",
+                    Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+                    Detail = badRequest.Message // describe la entrada del cliente, no la estructura interna
+                };
+            }
+            else
+            {
+                logger.LogError(exception, "Excepción no controlada en {Method} {Path}",
+                    httpContext.Request.Method, httpContext.Request.Path);
+
+                problemDetails = new ProblemDetails
                 {
                     Status = StatusCodes.Status500InternalServerError,
                     Title = "Error interno del servidor",
                     Type = "https://tools.ietf.org/html/rfc9110#section-15.6.1",
-                    Detail = environment.IsDevelopment() ? exception.Message : "Ha ocurrido un error inesperado. Por favor, inténtelo de nuevo más tarde."
+                    Detail = environment.IsDevelopment() ? exception.Message : "Ocurrió un error inesperado."
                 };
+            }
+
+            httpContext.Response.StatusCode = problemDetails.Status!.Value;
+
             return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext
             {
                 HttpContext = httpContext,

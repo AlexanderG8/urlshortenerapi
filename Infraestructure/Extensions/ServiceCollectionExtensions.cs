@@ -142,6 +142,7 @@ namespace urlshortenerapi.Infraestructure.Extensions
 
             services.AddHybridCache();
             services.AddSingleton<ShortLinkCache>();
+            services.AddSingleton<LinkStatsQuery>();
 
             return services;
         }

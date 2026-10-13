@@ -186,7 +186,7 @@ namespace urlshortenerapi.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ShortLinkId", "OccurredAt");
 
-                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("ShortLinkId", "OccurredAt"), new[] { "RefererHost" });
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("ShortLinkId", "OccurredAt"), new[] { "RefererHost", "IpHash" });
 
                     b.ToTable("ClickEvents", (string)null);
                 });
